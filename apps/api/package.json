@@ -9,7 +9,7 @@
     "lint": "biome check src test",
     "typecheck": "tsc --noEmit -p tsconfig.json",
     "test": "vitest run",
-    "test:integration": "vitest run test/health.test.ts"
+    "test:integration": "npm run build --workspace @begifted/core && vitest run test/health.test.ts"
   },
   "dependencies": {
     "@begifted/core": "*",

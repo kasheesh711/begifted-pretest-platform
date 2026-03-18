@@ -45,13 +45,52 @@ Locks the session and emits `submission.completed`.
 
 ## Staff endpoints
 
+### `POST /api/grading/evaluate`
+
+Seeds grading results for a submitted session and emits shell grading events.
+
+Request fields:
+
+- `sessionId`
+- `submittedAt` optional
+- `answers[]`
+- `answers[].submissionAnswerId`
+- `answers[].questionId`
+- `answers[].gradingMode`
+- `answers[].answer`
+- `answers[].acceptedAnswers` optional for deterministic items
+- `answers[].maxScore`
+
+Response fields:
+
+- `sessionId`
+- `submittedAt`
+- `gradingResults`
+- `summary`
+- `events`
+
 ### `GET /api/review-queue`
 
 Returns submissions requiring review.
 
+Response fields:
+
+- `items`
+- `total`
+
 ### `POST /api/review-queue/:gradingResultId/resolve`
 
 Stores a review decision or score override.
+
+Request fields:
+
+- `reviewedBy`
+- `scoreAwarded`
+- `rationale`
+
+Response fields:
+
+- `gradingResult`
 
 ### `POST /api/reports/:sessionId/generate`
 
@@ -89,4 +128,3 @@ Each event payload must include:
 - public token endpoints return `404` or `410` for invalid or expired links
 - submission endpoints reject writes after final submit
 - report send endpoints reject when unresolved reviews remain
-
