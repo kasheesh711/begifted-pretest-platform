@@ -47,3 +47,9 @@
 - Status: accepted
 - Decision: keep the grading seed and review-resolution payload shapes in `packages/core`, while the API shell uses in-memory storage until persistence and job orchestration land
 - Rationale: allows route consumers to integrate against one shared contract source without prematurely introducing database or workflow infrastructure
+
+## ADR-009: Wise shadow integration is dummy-only and additive
+
+- Status: accepted
+- Decision: integrate with Wise only through a sandbox shadow layer that creates and mutates BeGifted-owned dummy students, courses, and tests
+- Rationale: the live Wise tenant already carries production student, class, billing, and credit data, so the integration must default to dry-run behavior and block any mutation path outside the reserved BeGifted sandbox scope

@@ -1,8 +1,21 @@
 import { Button, Card, PageShell } from "@begifted/ui";
 import type { CSSProperties } from "react";
+import { buildApiUrl } from "../../lib/api";
 
 interface StudentLandingProps {
   params: Promise<{ token: string }>;
+}
+
+interface InviteLookupResult {
+  inviteId: string;
+  token: string;
+  studentName: string;
+  assessmentTitles: string[];
+  expiresAt: string;
+  deliveryProvider: "wise-sandbox";
+  launchUrl: string | null;
+  launchReady: boolean;
+  launchInstructions: string;
 }
 
 const tealGradient =
@@ -80,31 +93,77 @@ const stepDesc: CSSProperties = {
 const steps = [
   {
     number: "1",
-    title: "Verify your details",
+    title: "Verify your sandbox invite",
     description:
-      "Confirm your name and the assessments assigned to you before starting.",
+      "Confirm your assigned assessment before launching the BeGifted sandbox bridge.",
   },
   {
     number: "2",
-    title: "Complete the pre-test",
+    title: "Open the Wise sandbox test",
     description:
-      "Answer each section at your own pace. Your progress is saved automatically.",
+      "The launch link opens only BeGifted-owned dummy Wise entities, never live classes or students.",
   },
   {
     number: "3",
-    title: "Submit your responses",
+    title: "Return for grading and diagnostics",
     description:
-      "Review your answers and submit. You won't be able to change responses after submission.",
+      "Sandbox submissions are pulled back into BeGifted for shadow grading and diagnostics.",
   },
 ];
+
+export const dynamic = "force-dynamic";
+
+async function loadInvite(token: string) {
+  const response = await fetch(buildApiUrl(`/api/public/invites/${token}`), {
+    cache: "no-store",
+  });
+
+  if (response.status === 404) {
+    return { status: "missing" as const };
+  }
+
+  if (response.status === 410) {
+    return { status: "expired" as const };
+  }
+
+  if (!response.ok) {
+    return { status: "error" as const };
+  }
+
+  return {
+    status: "ready" as const,
+    invite: (await response.json()) as InviteLookupResult,
+  };
+}
 
 export default async function StudentLandingPage({
   params,
 }: StudentLandingProps) {
   const { token } = await params;
+  const inviteState = await loadInvite(token);
 
-  // Token validation will call GET /api/public/invites/:token once backend is ready.
-  // For now we render the shell unconditionally.
+  if (inviteState.status !== "ready") {
+    const message =
+      inviteState.status === "expired"
+        ? "This sandbox invite has expired. Ask BeGifted to issue a new test link."
+        : inviteState.status === "missing"
+          ? "This sandbox invite could not be found."
+          : "BeGifted could not load your sandbox invite right now.";
+
+    return (
+      <PageShell maxWidth={600} gradient={tealGradient}>
+        <Card accent="#0f766e">
+          <div style={accentBar} />
+          <p style={tagline}>BeGifted Assessment</p>
+          <h1 style={heading}>Sandbox invite unavailable</h1>
+          <p style={body}>{message}</p>
+        </Card>
+      </PageShell>
+    );
+  }
+
+  const { invite } = inviteState;
+  const launchBridgeUrl = buildApiUrl(`/api/public/invites/${token}/launch`);
 
   return (
     <PageShell maxWidth={600} gradient={tealGradient}>
@@ -113,9 +172,9 @@ export default async function StudentLandingPage({
         <p style={tagline}>BeGifted Assessment</p>
         <h1 style={heading}>Welcome to your pre-test</h1>
         <p style={body}>
-          You&rsquo;ve been invited to complete an academic assessment. This
-          helps your instructor understand your current level and recommend the
-          best learning path for you.
+          You&rsquo;ve been invited to complete a BeGifted-managed sandbox
+          assessment. This launch path uses only dummy Wise entities and does
+          not touch any live student, class, billing, or credit records.
         </p>
       </Card>
 
@@ -146,23 +205,46 @@ export default async function StudentLandingPage({
       <Card accent="#0f766e" style={{ textAlign: "center" as const }}>
         <p
           style={{
+            margin: "0 0 10px",
+            fontSize: 14,
+            color: "#0f766e",
+            fontWeight: 600,
+          }}
+        >
+          Assigned assessment: {invite.assessmentTitles.join(", ")}
+        </p>
+        <p
+          style={{
             margin: "0 0 16px",
             fontSize: 14,
             color: "#57534e",
             lineHeight: 1.5,
           }}
         >
-          When you&rsquo;re ready, click below to begin. Make sure you have a
-          quiet space and enough time to finish without interruption.
+          {invite.launchInstructions}
         </p>
-        <Button
-          style={{
-            background: "linear-gradient(135deg, #0f766e, #14b8a6)",
-            boxShadow: "0 4px 14px rgba(15, 118, 110, 0.3)",
-          }}
-        >
-          Begin assessment
-        </Button>
+        {invite.launchReady ? (
+          <a
+            href={launchBridgeUrl}
+            style={{
+              display: "inline-flex",
+              alignItems: "center",
+              justifyContent: "center",
+              padding: "12px 28px",
+              borderRadius: 14,
+              fontSize: 15,
+              fontWeight: 600,
+              color: "#fff",
+              textDecoration: "none",
+              background: "linear-gradient(135deg, #0f766e, #14b8a6)",
+              boxShadow: "0 4px 14px rgba(15, 118, 110, 0.3)",
+            }}
+          >
+            Launch sandbox assessment
+          </a>
+        ) : (
+          <Button disabled>Launch unavailable</Button>
+        )}
         <p
           style={{
             margin: "12px 0 0",
@@ -170,7 +252,7 @@ export default async function StudentLandingPage({
             color: "#a8a29e",
           }}
         >
-          Invite token: {token.slice(0, 8)}&hellip;
+          Invite token: {invite.token.slice(0, 8)}&hellip;
         </p>
       </Card>
     </PageShell>

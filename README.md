@@ -37,6 +37,13 @@ Supported agent runtimes include Codex and Claude Code, as long as each active s
 
 To launch multiple agents automatically from GitHub-ready issues, use the local supervisor described in [docs/ORCHESTRATION.md](./docs/ORCHESTRATION.md).
 
+## Wise shadow safety
+
+- Wise integration is currently sandbox-only
+- all Wise writes are dry-run by default unless `WISE_SANDBOX_ALLOW_MUTATIONS=true`
+- only BeGifted-owned dummy Wise students, courses, and tests may be created or mutated
+- live Wise students, billing, credits, fees, and operational records are out of bounds
+
 ## GitHub setup
 
 Run the bootstrap helper after creating the GitHub repository and authenticating `gh`:
