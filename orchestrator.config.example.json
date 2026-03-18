@@ -1,0 +1,30 @@
+{
+  "repo": "kasheesh711/begifted-pretest-platform",
+  "project": {
+    "owner": "kasheesh711",
+    "number": 2
+  },
+  "maxIssues": 3,
+  "providers": {
+    "codex": {
+      "commandTemplate": "codex exec -C {worktree} {launch_args} --dangerously-bypass-approvals-and-sandbox \"$(cat '{handoff}')\""
+    },
+    "claude": {
+      "commandTemplate": "claude -p {launch_args} --permission-mode bypassPermissions \"$(cat '{handoff}')\""
+    }
+  },
+  "routing": {
+    "profiles": {
+      "codex": {
+        "economy": { "model": "gpt-5.4-mini", "effort": "low" },
+        "balanced": { "model": "gpt-5.4-mini", "effort": "medium" },
+        "deep": { "model": "gpt-5.4", "effort": "high" }
+      },
+      "claude": {
+        "economy": { "model": "sonnet", "effort": "low" },
+        "balanced": { "model": "sonnet", "effort": "medium" },
+        "deep": { "model": "opus", "effort": "high" }
+      }
+    }
+  }
+}

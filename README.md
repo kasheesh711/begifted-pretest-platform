@@ -33,7 +33,9 @@ npm run test
 4. Work only inside the task's declared write scope.
 5. Open a PR using the repository templates and handoff contract.
 
-Supported agent runtimes include Codex, Claude Code, and Gemini via Antigravity, as long as each active session follows the same worktree, issue, and write-scope rules.
+Supported agent runtimes include Codex and Claude Code, as long as each active session follows the same worktree, issue, and write-scope rules.
+
+To launch multiple agents automatically from GitHub-ready issues, use the local supervisor described in [docs/ORCHESTRATION.md](./docs/ORCHESTRATION.md).
 
 ## GitHub setup
 

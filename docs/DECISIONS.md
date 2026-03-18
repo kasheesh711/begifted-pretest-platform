@@ -33,8 +33,8 @@
 ## ADR-006: Multi-provider agent support
 
 - Status: accepted
-- Decision: support Codex, Claude Code, and Gemini via Antigravity under one shared workflow
-- Rationale: increases parallel implementation capacity without changing repository governance or review rules
+- Decision: support Codex and Claude Code under one shared workflow
+- Rationale: keeps parallel implementation capacity while reducing provider-specific operational complexity
 
 ## ADR-007: Policy-driven merge and release automation
 

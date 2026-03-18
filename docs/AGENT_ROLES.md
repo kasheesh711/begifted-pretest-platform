@@ -1,6 +1,6 @@
 # Agent Roles and Write Scopes
 
-These roles are provider-agnostic. Codex, Claude Code, and Gemini via Antigravity can be assigned to any role as long as the task, write scope, and review rules are unchanged.
+These roles are provider-agnostic. Codex and Claude Code can be assigned to any role as long as the task, write scope, and review rules are unchanged.
 
 ## PM/Spec Agent
 

@@ -12,7 +12,7 @@
 8. After approval and passing checks, item is squashed into `main`.
 9. Project card moves to `Done`.
 
-The same workflow applies whether the active implementation session is Codex, Claude Code, or Gemini via Antigravity.
+The same workflow applies whether the active implementation session is Codex or Claude Code.
 
 ## PR lifecycle
 

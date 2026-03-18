@@ -20,6 +20,7 @@
     "validate:content": "npm run validate --workspace @begifted/content-tools",
     "agent:status": "node scripts/agent-status.mjs",
     "agent:new-worktree": "bash scripts/new-agent-worktree.sh",
+    "orchestrate:agents": "node scripts/orchestrate-agents.mjs",
     "github:bootstrap": "bash scripts/bootstrap-github.sh"
   },
   "devDependencies": {
