@@ -1,7 +1,12 @@
-# Replace placeholder teams or usernames before enabling mandatory code owner review.
-# Example:
-# apps/web/ @your-org/frontend-team
-# apps/api/ @your-org/platform-team
-# packages/content-tools/ @your-org/content-team
-# .github/ @your-org/qa-ops-team
+* @kasheesh711
 
+apps/web/ @kasheesh711
+apps/api/ @kasheesh711
+packages/core/ @kasheesh711
+packages/ui/ @kasheesh711
+packages/content-tools/ @kasheesh711
+content/ @kasheesh711
+docs/ @kasheesh711
+.github/ @kasheesh711
+scripts/ @kasheesh711
+infra/ @kasheesh711
