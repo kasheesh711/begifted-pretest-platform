@@ -47,6 +47,25 @@ Claude Code note:
 claude -p --permission-mode bypassPermissions "$(cat '{handoff}')"
 ```
 
+Codex note:
+
+- Codex should be launched with `exec -C`, not `--cwd`
+- example:
+
+```bash
+codex exec -C {worktree} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
+```
+
+Gemini via Antigravity note:
+
+- the local `antigravity` CLI is an editor launcher, not a prompt-driven Gemini runner
+- the reliable automation path is to open the assigned worktree and handoff in a new Antigravity window
+- example:
+
+```bash
+antigravity --new-window "{worktree}" "{handoff}"
+```
+
 ## Usage
 
 Dry-run without launches:
@@ -72,6 +91,8 @@ Relaunch an already assigned issue:
 ```bash
 npm run orchestrate:agents -- --issue 2 --relaunch
 ```
+
+When `--issue` and `--relaunch` are used together, the orchestrator can relaunch an open issue even after `status: ready` has been removed.
 
 ## Behavior
 

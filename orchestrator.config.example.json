@@ -7,13 +7,13 @@
   "maxIssues": 3,
   "providers": {
     "codex": {
-      "commandTemplate": "codex --cwd {worktree}"
+      "commandTemplate": "codex exec -C {worktree} --dangerously-bypass-approvals-and-sandbox \"$(cat '{handoff}')\""
     },
     "claude": {
       "commandTemplate": "claude -p --permission-mode bypassPermissions \"$(cat '{handoff}')\""
     },
     "gemini": {
-      "commandTemplate": "antigravity run gemini --cwd {worktree}"
+      "commandTemplate": "antigravity --new-window \"{worktree}\" \"{handoff}\""
     }
   }
 }

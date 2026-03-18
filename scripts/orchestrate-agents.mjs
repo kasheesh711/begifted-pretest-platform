@@ -168,6 +168,20 @@ function listReadyIssues(repo) {
   );
 }
 
+function getIssue(repo, issueNumber) {
+  const raw = run("gh", [
+    "issue",
+    "view",
+    String(issueNumber),
+    "--repo",
+    repo,
+    "--json",
+    "number,title,labels,url,milestone,state",
+  ]);
+
+  return JSON.parse(raw);
+}
+
 function listProjectFields(project) {
   const raw = run("gh", [
     "project",
@@ -292,9 +306,11 @@ function upsertIssueComment(repo, issueNumber, body, dryRun) {
   if (existing) {
     run("gh", [
       "api",
-      `repos/${repo}/issues/comments/${existing.id}`,
-      "-X",
-      "PATCH",
+      "graphql",
+      "-f",
+      "query=mutation($id:ID!, $body:String!) { updateIssueComment(input:{id:$id, body:$body}) { issueComment { id } } }",
+      "-f",
+      `id=${existing.id}`,
       "-f",
       `body=${body}`,
     ]);
@@ -501,9 +517,13 @@ async function main() {
   await mkdir(logsDir, { recursive: true });
   await mkdir(runsDir, { recursive: true });
 
-  const issues = listReadyIssues(repo)
-    .filter((issue) => (options.issue ? issue.number === options.issue : true))
-    .slice(0, options.maxIssues ?? resolved.maxIssues);
+  const issues = options.issue
+    ? [getIssue(repo, options.issue)].filter((issue) =>
+        options.relaunch
+          ? issue.state === "OPEN"
+          : issue.labels.some((label) => label.name === "status: ready"),
+      )
+    : listReadyIssues(repo).slice(0, options.maxIssues ?? resolved.maxIssues);
 
   const results = [];
 
