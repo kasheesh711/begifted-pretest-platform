@@ -1,0 +1,37 @@
+# Decisions
+
+## ADR-001: Single monorepo
+
+- Status: accepted
+- Decision: keep application code, tooling, docs, and content operations in one repository
+- Rationale: reduces cross-repo coordination overhead for parallel agents
+
+## ADR-002: GitHub as delivery system of record
+
+- Status: accepted
+- Decision: use GitHub Issues, Projects, PRs, and Actions as the operational backbone
+- Rationale: provides a unified queue, approval flow, and visible progress surface
+
+## ADR-003: Git worktrees for agent isolation
+
+- Status: accepted
+- Decision: each agent works in a dedicated worktree and short-lived branch
+- Rationale: prevents filesystem conflicts and keeps branch ownership explicit
+
+## ADR-004: Hybrid grading
+
+- Status: accepted
+- Decision: deterministic auto-grading for objective items, review-required handling for subjective items
+- Rationale: protects grading quality while still reducing manual effort
+
+## ADR-005: Code-owned reporting template
+
+- Status: accepted
+- Decision: rebuild the report template in code instead of editing the static PDF directly
+- Rationale: enables variable insertion, auditability, and version-controlled design changes
+
+## ADR-006: Multi-provider agent support
+
+- Status: accepted
+- Decision: support Codex, Claude Code, and Gemini via Antigravity under one shared workflow
+- Rationale: increases parallel implementation capacity without changing repository governance or review rules

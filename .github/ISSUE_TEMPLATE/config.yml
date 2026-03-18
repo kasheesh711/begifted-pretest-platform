@@ -1,0 +1,6 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Operating manual
+    url: https://github.com/REPLACE_ME/REPLACE_ME/blob/main/AGENTS.md
+    about: Read the repo rules before creating work.
+

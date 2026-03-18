@@ -1,0 +1,33 @@
+{
+  "name": "begifted-pretest-platform",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "npm@10.9.2",
+  "workspaces": ["apps/*", "packages/*"],
+  "engines": {
+    "node": ">=22.0.0",
+    "npm": ">=10.0.0"
+  },
+  "scripts": {
+    "dev": "turbo run dev --parallel",
+    "build": "turbo run build",
+    "lint": "turbo run lint && biome check .",
+    "typecheck": "turbo run typecheck",
+    "test": "npm run test:repo && turbo run test",
+    "test:repo": "vitest run tests",
+    "test:integration": "turbo run test:integration",
+    "validate:content": "npm run validate --workspace @begifted/content-tools",
+    "agent:status": "node scripts/agent-status.mjs",
+    "agent:new-worktree": "bash scripts/new-agent-worktree.sh",
+    "github:bootstrap": "bash scripts/bootstrap-github.sh"
+  },
+  "devDependencies": {
+    "@biomejs/biome": "^1.9.4",
+    "@types/node": "^22.14.1",
+    "turbo": "^2.5.8",
+    "tsx": "^4.20.3",
+    "typescript": "^5.8.2",
+    "vitest": "^3.2.4"
+  }
+}

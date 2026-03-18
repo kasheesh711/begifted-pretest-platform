@@ -1,0 +1,58 @@
+name: Bug task
+description: Bug report and fix task for the agent workflow
+title: "[Bug] "
+labels:
+  - type: bug
+body:
+  - type: textarea
+    id: summary
+    attributes:
+      label: Bug summary
+      description: What is broken?
+    validations:
+      required: true
+  - type: textarea
+    id: impact
+    attributes:
+      label: Impact
+      description: Who is affected and how severe is it?
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Reproduction
+      description: Exact steps, payloads, or screenshots.
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Owning agent role
+      options:
+        - Platform Agent
+        - Frontend Agent
+        - Content Pipeline Agent
+        - Grading/Diagnostics Agent
+        - QA/Ops Agent
+    validations:
+      required: true
+  - type: textarea
+    id: write_scope
+    attributes:
+      label: Exact write scope
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Fix acceptance criteria
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Required validation
+    validations:
+      required: true
+

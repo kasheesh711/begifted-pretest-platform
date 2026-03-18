@@ -1,0 +1,29 @@
+frontend:
+  - "apps/web/**/*"
+  - "packages/ui/**/*"
+
+backend:
+  - "apps/api/**/*"
+
+content:
+  - "content/**/*"
+  - "packages/content-tools/**/*"
+
+contracts:
+  - "packages/core/**/*"
+  - "docs/API_CONTRACTS.md"
+  - "docs/DATA_MODEL.md"
+
+ops:
+  - ".github/**/*"
+  - "infra/**/*"
+  - "scripts/**/*"
+  - "package.json"
+  - "turbo.json"
+  - "tsconfig.base.json"
+
+docs:
+  - "docs/**/*"
+  - "AGENTS.md"
+  - "README.md"
+

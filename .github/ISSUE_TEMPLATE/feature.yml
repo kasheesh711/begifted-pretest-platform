@@ -1,0 +1,69 @@
+name: Feature task
+description: Scoped implementation task for Codex or Claude Code
+title: "[Feature] "
+labels:
+  - type: feature
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: Problem statement
+      description: What outcome is needed and why?
+    validations:
+      required: true
+  - type: textarea
+    id: scope
+    attributes:
+      label: Scope
+      description: List the in-scope work.
+    validations:
+      required: true
+  - type: textarea
+    id: non_goals
+    attributes:
+      label: Non-goals
+      description: What this task must not do.
+    validations:
+      required: true
+  - type: dropdown
+    id: owner
+    attributes:
+      label: Owning agent role
+      options:
+        - PM/Spec Agent
+        - Platform Agent
+        - Frontend Agent
+        - Content Pipeline Agent
+        - Grading/Diagnostics Agent
+        - QA/Ops Agent
+    validations:
+      required: true
+  - type: textarea
+    id: write_scope
+    attributes:
+      label: Exact write scope
+      description: Paths or modules the agent may edit.
+    validations:
+      required: true
+  - type: textarea
+    id: dependencies
+    attributes:
+      label: Dependencies and blockers
+      description: List issue numbers or state `none`.
+    validations:
+      required: true
+  - type: textarea
+    id: acceptance
+    attributes:
+      label: Acceptance criteria
+      description: One per line.
+    validations:
+      required: true
+  - type: textarea
+    id: validation
+    attributes:
+      label: Required validation
+      description: Lint, typecheck, tests, manual proof.
+    validations:
+      required: true
+

@@ -1,0 +1,19 @@
+{
+  "id": "science-uk-year-7-foundation-v1",
+  "title": "Year 7 Science Foundation Pre-Test",
+  "subject": "Science",
+  "curriculum": "UK",
+  "level": "Year 7",
+  "durationMinutes": 45,
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Which of the following is a living thing?",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["biology.life-processes"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["B"]
+    }
+  ]
+}
