@@ -1,0 +1,194 @@
+{
+  "id": "science-uk-year-7-foundation-pretest",
+  "title": "Year 7 Science Foundation Pre-Test",
+  "subject": "Science",
+  "curriculum": "UK",
+  "level": "Year 7",
+  "durationMinutes": 45,
+  "questions": [
+    {
+      "id": "q1",
+      "prompt": "Which of the following is a living thing?\nA. Rock\nB. Mushroom\nC. Fire\nD. Cloud",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["biology.life-processes", "classification.living-things"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["B", "Mushroom"]
+    },
+    {
+      "id": "q2",
+      "prompt": "Which word best completes the sentence? Plants make their own food using sunlight in a process called __________.\nA. respiration\nB. digestion\nC. photosynthesis\nD. evaporation",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["biology.plants", "biology.photosynthesis"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["C", "photosynthesis"]
+    },
+    {
+      "id": "q3",
+      "prompt": "Which unit is used to measure temperature?\nA. grams (g)\nB. metres (m)\nC. degrees Celsius (°C)\nD. seconds (s)",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["physics.measurement", "physics.temperature"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": [
+        "C",
+        "degrees Celsius",
+        "degrees Celsius (°C)",
+        "Celsius"
+      ]
+    },
+    {
+      "id": "q4",
+      "prompt": "Match the particle behaviour to its state of matter. Use the table letters.\nSolid -> ?\nLiquid -> ?\nGas -> ?\nA. Particles move freely and far apart\nB. Particles vibrate in fixed positions\nC. Particles slide past each other",
+      "type": "matching",
+      "marks": 2,
+      "topicTags": ["chemistry.particle-model", "chemistry.states-of-matter"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["Solid:B|Liquid:C|Gas:A", "Solid=B;Liquid=C;Gas=A"]
+    },
+    {
+      "id": "q5",
+      "prompt": "Which is a physical change?\nA. Burning wood\nB. Rusting iron\nC. Melting ice\nD. Cooking an egg",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": [
+        "chemistry.changes-of-state",
+        "chemistry.physical-and-chemical-changes"
+      ],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["C", "Melting ice"]
+    },
+    {
+      "id": "q6",
+      "prompt": "Identify the correct food chain.\nA. Fox -> grass -> rabbit\nB. Grass -> rabbit -> fox\nC. Rabbit -> fox -> grass\nD. Sun -> fox -> rabbit",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["biology.ecology", "biology.food-chains"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["B", "Grass -> rabbit -> fox"]
+    },
+    {
+      "id": "q7",
+      "prompt": "Choose the correct statement.\nA. Forces can only slow objects down\nB. Forces can change the shape of objects\nC. Forces only work on moving objects\nD. Forces are not measured",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": ["physics.forces", "physics.motion"],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["B", "Forces can change the shape of objects"]
+    },
+    {
+      "id": "q8",
+      "prompt": "What was the aim of the experiment? Use the phrase \"to investigate...\" in your answer.",
+      "type": "short_text",
+      "marks": 2,
+      "topicTags": [
+        "working-scientifically.aims",
+        "working-scientifically.fair-testing"
+      ],
+      "gradingMode": "rubric-assisted",
+      "acceptedAnswers": [
+        "to investigate how temperature affects how quickly sugar dissolves in water",
+        "investigate how temperature affects dissolving"
+      ]
+    },
+    {
+      "id": "q9",
+      "prompt": "Which variable was changed in the experiment?\nA. Amount of sugar\nB. Temperature of the water\nC. Type of container\nD. Stirring time",
+      "type": "multiple_choice",
+      "marks": 1,
+      "topicTags": [
+        "working-scientifically.variables",
+        "working-scientifically.fair-testing"
+      ],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": ["B", "Temperature of the water"]
+    },
+    {
+      "id": "q10",
+      "prompt": "Why did the sugar dissolve faster in warm water? Explain using particle theory.",
+      "type": "long_form",
+      "marks": 2,
+      "topicTags": [
+        "chemistry.particle-model",
+        "working-scientifically.explanations"
+      ],
+      "gradingMode": "rubric-assisted",
+      "acceptedAnswers": [
+        "In warm water, particles move faster and collide with the sugar more often, causing it to dissolve more quickly."
+      ]
+    },
+    {
+      "id": "q11",
+      "prompt": "What mistake did one group make?",
+      "type": "short_text",
+      "marks": 1,
+      "topicTags": [
+        "working-scientifically.variables",
+        "working-scientifically.fair-testing"
+      ],
+      "gradingMode": "deterministic",
+      "acceptedAnswers": [
+        "They did not keep the amount of sugar the same",
+        "did not control variables",
+        "they changed the amount of sugar"
+      ]
+    },
+    {
+      "id": "q12",
+      "prompt": "Why is it important to control variables in an experiment? Answer in a full sentence.",
+      "type": "long_form",
+      "marks": 2,
+      "topicTags": [
+        "working-scientifically.variables",
+        "working-scientifically.reliability"
+      ],
+      "gradingMode": "rubric-assisted",
+      "acceptedAnswers": [
+        "Controlling variables makes the experiment fair so results are reliable and can be compared."
+      ]
+    },
+    {
+      "id": "q13",
+      "prompt": "A student answers Q10 like this: \"Because the water was warm.\"\na) Why would this answer not get full marks?\nb) Rewrite the answer so it would receive full marks.",
+      "type": "long_form",
+      "marks": 4,
+      "topicTags": [
+        "exam-technique.science",
+        "working-scientifically.explanations"
+      ],
+      "gradingMode": "manual-review-required",
+      "acceptedAnswers": [
+        "It lacks explanation and scientific vocabulary such as particle theory. A full-mark answer would say that warm water particles move faster and collide with the sugar more often, causing it to dissolve faster."
+      ]
+    },
+    {
+      "id": "q14",
+      "prompt": "Explain the difference between the command words describe and explain in science.",
+      "type": "long_form",
+      "marks": 3,
+      "topicTags": [
+        "exam-technique.command-words",
+        "scientific-writing.explanations"
+      ],
+      "gradingMode": "manual-review-required",
+      "acceptedAnswers": [
+        "Describe means to say what you see or what happens. Explain means to give reasons and say why it happens."
+      ]
+    },
+    {
+      "id": "q15",
+      "prompt": "Write one paragraph (5-7 sentences) explaining why scientists repeat experiments.",
+      "type": "long_form",
+      "marks": 7,
+      "topicTags": [
+        "scientific-writing.paragraphs",
+        "working-scientifically.reliability"
+      ],
+      "gradingMode": "manual-review-required",
+      "acceptedAnswers": [
+        "Scientists repeat experiments to make results more reliable. Repeating an experiment helps to check that the results are not due to a mistake or chance. If the same results are seen again, scientists can be more confident in their conclusion. Repetition also helps to identify errors in method or measurement. This improves the accuracy of scientific investigations."
+      ]
+    }
+  ]
+}
