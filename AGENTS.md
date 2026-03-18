@@ -22,6 +22,7 @@ This repository is designed for concurrent work by Codex, Claude Code, and Gemin
 - TypeScript, Vitest, Biome
 - Vercel, Supabase, GitHub Actions, and GitHub Projects once configured
 - Antigravity as the Gemini execution adapter when Gemini is used as an implementation agent
+- `scripts/orchestrate-agents.mjs` as the local supervisor for dispatching ready issues into provider-specific worktrees
 
 Do not introduce new infrastructure or orchestration tooling without recording the change in `docs/DECISIONS.md`.
 

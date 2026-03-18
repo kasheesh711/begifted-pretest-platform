@@ -1,0 +1,19 @@
+{
+  "repo": "kasheesh711/begifted-pretest-platform",
+  "project": {
+    "owner": "kasheesh711",
+    "number": 2
+  },
+  "maxIssues": 3,
+  "providers": {
+    "codex": {
+      "commandTemplate": "codex --cwd {worktree}"
+    },
+    "claude": {
+      "commandTemplate": "claude --cwd {worktree}"
+    },
+    "gemini": {
+      "commandTemplate": "antigravity run gemini --cwd {worktree}"
+    }
+  }
+}

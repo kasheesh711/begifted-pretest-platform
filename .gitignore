@@ -3,6 +3,7 @@ node_modules/
 dist/
 .turbo/
 coverage/
+tmp/
 *.tsbuildinfo
 .DS_Store
 *.log
