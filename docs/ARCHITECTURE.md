@@ -24,11 +24,11 @@
 
 1. Staff creates an invite and selects assessment templates.
 2. API stores the invite, recipient data, and expiration policy.
-3. Email service sends a one-time access link.
-4. Student uses the web app to complete the assessment.
-5. Submission answers are persisted incrementally.
-6. Objective grading runs synchronously or in a background job.
-7. Subjective items are scored with rubric-assisted logic and review flags.
+3. In Wise shadow mode, API provisions only BeGifted-owned dummy Wise entities.
+4. Email or staff launch surfaces send a one-time access link.
+5. Student uses the web app to open the sandbox launch bridge.
+6. Wise hosts the dummy sandbox test for objective-supported items only.
+7. BeGifted pulls sandbox submissions back into the grading shell.
 8. Diagnostics and recommendation rules assemble the report payload.
 9. Staff validates the result.
 10. Approved report is rendered to PDF and distributed.
@@ -55,6 +55,7 @@
 - raw binary assets enter `content/raw`
 - normalized JSON is stored in `content/normalized`
 - runtime content is loaded into database records or object storage-backed references
+- Wise shadow publishing maps supported deterministic questions into BeGifted-owned dummy Wise tests
 - submissions generate grading results and diagnostics
 - approved results generate PDF artifacts and email events
 
@@ -63,6 +64,8 @@
 - staff authenticate through managed auth
 - students use secure invite tokens rather than full accounts in V1
 - invite tokens map to assessment sessions with limited lifetime and single-submission policy
+- Wise shadow mode never attaches live Wise data to existing students or classes
+- Wise shadow writes are dry-run by default unless sandbox mutations are explicitly enabled
 
 ## Grading pipeline
 
@@ -83,6 +86,6 @@
 - GitHub: engineering workflow, issues, Projects, PR gating
 - Supabase: database, storage, auth, row-level security
 - Vercel: frontend deployment and preview URLs
+- Wise: dummy-only shadow delivery for sandbox students and tests
 - Email provider: invite and report delivery
 - Sentry: runtime monitoring
-

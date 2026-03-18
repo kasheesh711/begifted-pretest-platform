@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 
 import { buildServer } from "../src/server.js";
+import { createWiseSandboxService } from "../src/wise-sandbox.js";
 
 describe("api health and grading", () => {
   it("returns a healthy response", async () => {
@@ -405,6 +406,223 @@ describe("api health and grading", () => {
     expect(response.json()).toMatchObject({
       error: "not_found",
       message: "Grading result was not found.",
+    });
+
+    await server.close();
+  });
+
+  it("creates and exposes Wise sandbox invites without touching live entities", async () => {
+    const server = buildServer();
+    const createResponse = await server.inject({
+      method: "POST",
+      url: "/api/invites",
+      payload: {
+        studentName: "Alex Chen",
+        parentEmail: "parent@example.com",
+        recipientEmails: ["advisor@example.com"],
+        assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+        expiresAt: "2026-03-20T23:59:59.000Z",
+      },
+    });
+
+    expect(createResponse.statusCode).toBe(200);
+    expect(createResponse.json()).toMatchObject({
+      status: "sandbox_ready",
+      deliveryProvider: "wise-sandbox",
+      dryRun: true,
+      assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+    });
+
+    const { token } = createResponse.json() as { token: string };
+    const inviteResponse = await server.inject({
+      method: "GET",
+      url: `/api/public/invites/${token}`,
+    });
+
+    expect(inviteResponse.statusCode).toBe(200);
+    expect(inviteResponse.json()).toMatchObject({
+      token,
+      studentName: "Alex Chen",
+      deliveryProvider: "wise-sandbox",
+      launchReady: true,
+      assessmentTitles: ["Year 7 Science Foundation Pre-Test"],
+    });
+
+    const launchResponse = await server.inject({
+      method: "GET",
+      url: `/api/public/invites/${token}/launch`,
+    });
+
+    expect(launchResponse.statusCode).toBe(303);
+    expect(launchResponse.headers.location).toContain("mode=wise-sandbox");
+
+    const logResponse = await server.inject({
+      method: "GET",
+      url: "/api/wise/sandbox/logs",
+    });
+
+    expect(logResponse.statusCode).toBe(200);
+    expect(logResponse.json()).toMatchObject({
+      total: 7,
+    });
+
+    await server.close();
+  });
+
+  it("returns 410 for expired Wise sandbox invites", async () => {
+    const wiseSandbox = createWiseSandboxService({
+      now: () => "2026-03-18T00:00:00.000Z",
+    });
+    await wiseSandbox.createInvite({
+      studentName: "Expired Student",
+      parentEmail: "expired@example.com",
+      assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+      expiresAt: "2026-03-17T23:59:59.000Z",
+    });
+
+    const invite = wiseSandbox.getPublicInvite(
+      (
+        await wiseSandbox.createInvite({
+          studentName: "Ready Student",
+          parentEmail: "ready@example.com",
+          assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+          expiresAt: "2026-03-19T23:59:59.000Z",
+        })
+      ).token,
+    );
+
+    expect(invite?.expired).toBe(false);
+
+    const expiredServer = buildServer({
+      wiseSandbox: createWiseSandboxService({
+        now: () => "2026-03-18T00:00:00.000Z",
+      }),
+    });
+    const expiredCreateResponse = await expiredServer.inject({
+      method: "POST",
+      url: "/api/invites",
+      payload: {
+        studentName: "Expired Student",
+        parentEmail: "expired@example.com",
+        assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+        expiresAt: "2026-03-17T23:59:59.000Z",
+      },
+    });
+    const expiredToken = (expiredCreateResponse.json() as { token: string })
+      .token;
+    const expiredResponse = await expiredServer.inject({
+      method: "GET",
+      url: `/api/public/invites/${expiredToken}`,
+    });
+
+    expect(expiredResponse.statusCode).toBe(410);
+    expect(expiredResponse.json()).toMatchObject({
+      error: "expired",
+    });
+
+    await expiredServer.close();
+  });
+
+  it("syncs submissions only for BeGifted-owned Wise sandbox tests", async () => {
+    let createdTestId = "";
+    const wiseSandbox = createWiseSandboxService({
+      client: {
+        configured: false,
+        mode: "dry-run",
+        namespace: "sandbox",
+        launchUrlTemplate: undefined,
+        async getAccountUser() {
+          return {
+            wiseUserId: "dry-account",
+            name: "Sandbox",
+            namespace: "sandbox",
+          };
+        },
+        async createStudent(input) {
+          return {
+            wiseId: `student-${input.vendorUserId}`,
+            vendorUserId: input.vendorUserId,
+            displayName: input.displayName,
+            email: input.email,
+          };
+        },
+        async createCourse(input) {
+          return {
+            wiseId: "course-123",
+            displayName: input.displayName,
+            subject: input.subject,
+          };
+        },
+        async assignCourseToStudent() {},
+        async getCourseSections() {
+          return [{ sectionId: "section-1", name: "Section 1" }];
+        },
+        async createTest(input) {
+          createdTestId = "test-123";
+
+          return {
+            wiseId: createdTestId,
+            classId: input.classId,
+            displayName: input.displayName,
+          };
+        },
+        async addQuestions() {},
+        async updateTestSettings() {},
+        async publishTest() {},
+        async getTestSubmissions() {
+          return {
+            submissions: [
+              {
+                submissionId: "submission-1",
+                userName: "BGT Dummy",
+                answers: {
+                  q1: "b",
+                  q2: "c",
+                  q3: "c",
+                  q5: "c",
+                  q6: "b",
+                  q7: "b",
+                  q9: "b",
+                  q11: "they changed the amount of sugar",
+                },
+              },
+            ],
+          };
+        },
+      },
+      now: () => "2026-03-18T00:00:00.000Z",
+    });
+
+    await wiseSandbox.createInvite({
+      studentName: "Sandbox Student",
+      parentEmail: "sandbox@example.com",
+      assessmentVersionIds: ["science-uk-year-7-foundation-pretest"],
+      expiresAt: "2026-03-19T23:59:59.000Z",
+    });
+
+    const syncResponse =
+      await wiseSandbox.syncOwnedTestSubmissions(createdTestId);
+    expect(syncResponse).toMatchObject({
+      deliveryProvider: "wise-sandbox",
+      testId: "test-123",
+      assessmentId: "science-uk-year-7-foundation-pretest",
+      totalSubmissions: 1,
+      syncedSubmissions: [
+        {
+          submissionId: "submission-1",
+        },
+      ],
+    });
+
+    const server = buildServer({ wiseSandbox });
+    const blockedResponse = await server.inject({
+      method: "POST",
+      url: "/api/wise/sandbox/tests/not-owned/submissions/sync",
+    });
+
+    expect(blockedResponse.statusCode).toBe(403);
+    expect(blockedResponse.json()).toMatchObject({
+      error: "sync_blocked",
     });
 
     await server.close();

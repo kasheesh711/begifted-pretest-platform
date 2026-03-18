@@ -11,7 +11,7 @@
 
 ### `POST /api/invites`
 
-Creates an assessment invite.
+Creates a Wise shadow sandbox invite.
 
 Request fields:
 
@@ -24,8 +24,20 @@ Request fields:
 Response fields:
 
 - `inviteId`
+- `token`
 - `status`
 - `expiresAt`
+- `deliveryProvider`
+- `launchUrl`
+- `dryRun`
+- `publishedQuestionIds`
+- `skippedQuestionIds`
+
+Notes:
+
+- current sandbox flow supports exactly one assessment per invite
+- current sandbox flow provisions only BeGifted-owned dummy Wise entities
+- live Wise students, classes, billing, fees, and credits are out of scope and must not be touched
 
 ### `POST /api/invites/:inviteId/send`
 
@@ -33,7 +45,34 @@ Triggers email delivery of the invite link.
 
 ### `GET /api/public/invites/:token`
 
-Returns token validity, student-safe metadata, and assigned assessments.
+Returns token validity, student-safe metadata, assigned assessments, and sandbox launch metadata.
+
+Response fields:
+
+- `inviteId`
+- `token`
+- `studentName`
+- `assessmentTitles`
+- `expiresAt`
+- `deliveryProvider`
+- `launchUrl`
+- `launchReady`
+- `launchInstructions`
+
+Error behavior:
+
+- `404` when the invite token does not exist
+- `410` when the invite has expired
+
+### `GET /api/public/invites/:token/launch`
+
+Validates the invite and redirects to the Wise sandbox launch target.
+
+Error behavior:
+
+- `404` when the invite token does not exist
+- `410` when the invite has expired
+- `409` when the launch target is unavailable
 
 ### `POST /api/public/sessions/:sessionId/autosave`
 
@@ -104,6 +143,43 @@ Marks a report approved and emits `report.approved`.
 
 Dispatches the final report to recipients.
 
+### `GET /api/wise/sandbox/account`
+
+Returns the Wise sandbox connectivity snapshot.
+
+Response fields:
+
+- `deliveryProvider`
+- `mode`
+- `configured`
+- `account`
+
+### `GET /api/wise/sandbox/logs`
+
+Returns recent Wise sandbox write logs.
+
+Response fields:
+
+- `total`
+- `items`
+
+### `POST /api/wise/sandbox/tests/:testId/submissions/sync`
+
+Pulls submissions only for BeGifted-owned Wise sandbox tests and maps them into the grading shell.
+
+Response fields:
+
+- `deliveryProvider`
+- `testId`
+- `assessmentId`
+- `totalSubmissions`
+- `syncedSubmissions`
+
+Error behavior:
+
+- `403` when the test is not a BeGifted-owned sandbox binding
+- `400` when the binding is incomplete or the sync request cannot be satisfied safely
+
 ## Event contracts
 
 - `invite.created`
@@ -128,3 +204,4 @@ Each event payload must include:
 - public token endpoints return `404` or `410` for invalid or expired links
 - submission endpoints reject writes after final submit
 - report send endpoints reject when unresolved reviews remain
+- Wise shadow endpoints default to dry-run behavior unless `WISE_SANDBOX_ALLOW_MUTATIONS=true`
