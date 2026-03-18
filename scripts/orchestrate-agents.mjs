@@ -1,6 +1,6 @@
 import { execFileSync, spawn } from "node:child_process";
 import { openSync } from "node:fs";
-import { mkdir, readFile, stat, writeFile } from "node:fs/promises";
+import { mkdir, readFile, stat, unlink, writeFile } from "node:fs/promises";
 import path from "node:path";
 import process from "node:process";
 
@@ -9,6 +9,7 @@ import {
   buildLaunchCommand,
   mergeConfigWithDefaults,
   parseProjectUrl,
+  resolveExecutionProfile,
 } from "./lib/orchestrator.mjs";
 
 const STATUS_FIELD = "Status";
@@ -505,152 +506,171 @@ async function main() {
       ? { owner: options.projectOwner, number: options.projectNumber }
       : (resolved.project ?? inferProject(repo));
   const commandTemplates = resolved.providers;
-  const statePath = path.join(
-    currentRepoRoot,
-    "tmp",
-    "orchestrator-state.json",
-  );
-  const logsDir = path.join(currentRepoRoot, "tmp", "orchestrator-logs");
-  const runsDir = path.join(currentRepoRoot, "tmp", "orchestrator-runs");
-  const state = await loadJson(statePath, { launches: {} });
+  const tmpDir = path.join(currentRepoRoot, "tmp");
+  const statePath = path.join(tmpDir, "orchestrator-state.json");
+  const logsDir = path.join(tmpDir, "orchestrator-logs");
+  const runsDir = path.join(tmpDir, "orchestrator-runs");
+  const lockPath = path.join(tmpDir, "orchestrator.lock");
 
+  await mkdir(tmpDir, { recursive: true });
   await mkdir(logsDir, { recursive: true });
   await mkdir(runsDir, { recursive: true });
+  await writeFile(lockPath, String(process.pid), { flag: "wx" });
 
-  const issues = options.issue
-    ? [getIssue(repo, options.issue)].filter((issue) =>
-        options.relaunch
-          ? issue.state === "OPEN"
-          : issue.labels.some((label) => label.name === "status: ready"),
-      )
-    : listReadyIssues(repo).slice(0, options.maxIssues ?? resolved.maxIssues);
+  try {
+    const state = await loadJson(statePath, { launches: {} });
 
-  const results = [];
+    const issues = options.issue
+      ? [getIssue(repo, options.issue)].filter((issue) =>
+          options.relaunch
+            ? issue.state === "OPEN"
+            : issue.labels.some((label) => label.name === "status: ready"),
+        )
+      : listReadyIssues(repo).slice(0, options.maxIssues ?? resolved.maxIssues);
 
-  for (const issue of issues) {
-    const assignment = assignmentFromIssue(
-      issue,
-      currentRepoRoot,
-      workspaceRoot,
-    );
+    const results = [];
 
-    if (!assignment) {
-      continue;
-    }
+    for (const issue of issues) {
+      const assignment = assignmentFromIssue(
+        issue,
+        currentRepoRoot,
+        workspaceRoot,
+      );
 
-    const existingLaunch = state.launches[String(issue.number)];
-    const worktreeResult = ensureWorktree(
-      currentRepoRoot,
-      assignment,
-      options.dryRun,
-    );
+      if (!assignment) {
+        continue;
+      }
 
-    syncProjectMetadata({
-      project,
-      assignment,
-      dryRun: options.dryRun,
-    });
+      assignment.execution = resolveExecutionProfile(
+        issue,
+        assignment,
+        resolved,
+      );
 
-    let launchResult;
+      const existingLaunch = state.launches[String(issue.number)];
+      const worktreeResult = ensureWorktree(
+        currentRepoRoot,
+        assignment,
+        options.dryRun,
+      );
 
-    if (existingLaunch && !options.relaunch) {
-      launchResult = {
-        launched: false,
-        reason: "Existing launch record found; skipping.",
-        command: existingLaunch.command ?? null,
-        pid: existingLaunch.pid ?? null,
-        logPath: existingLaunch.logPath ?? null,
-      };
-    } else if (!options.launch) {
-      launchResult = {
-        launched: false,
-        reason: "Launch disabled by flag.",
-        command: buildLaunchCommand({
+      syncProjectMetadata({
+        project,
+        assignment,
+        dryRun: options.dryRun,
+      });
+
+      let launchResult;
+
+      if (existingLaunch && !options.relaunch) {
+        launchResult = {
+          launched: false,
+          reason: "Existing launch record found; skipping.",
+          command: existingLaunch.command ?? null,
+          pid: existingLaunch.pid ?? null,
+          logPath: existingLaunch.logPath ?? null,
+        };
+      } else if (!options.launch) {
+        launchResult = {
+          launched: false,
+          reason: "Launch disabled by flag.",
+          command: buildLaunchCommand({
+            assignment,
+            templates: commandTemplates,
+            repo,
+            repoRoot: currentRepoRoot,
+          }),
+        };
+      } else {
+        const command = buildLaunchCommand({
           assignment,
           templates: commandTemplates,
           repo,
           repoRoot: currentRepoRoot,
-        }),
-      };
-    } else {
-      const command = buildLaunchCommand({
-        assignment,
-        templates: commandTemplates,
-        repo,
-        repoRoot: currentRepoRoot,
-      });
-      launchResult = launchProvider(
-        command,
-        assignment,
-        options.dryRun,
-        logsDir,
-      );
-    }
+        });
+        launchResult = launchProvider(
+          command,
+          assignment,
+          options.dryRun,
+          logsDir,
+        );
+      }
 
-    const commentBody = [
-      COMMENT_MARKER,
-      "## Orchestrator Assignment",
-      "",
-      `- Provider: \`${assignment.provider}\``,
-      `- Role: \`${assignment.role}\``,
-      `- Branch: \`${assignment.branch}\``,
-      `- Worktree: \`${assignment.worktree}\``,
-      `- Handoff: \`${path.relative(currentRepoRoot, assignment.handoffPath)}\``,
-      `- Launch status: \`${launchResult.launched ? "launched" : "prepared"}\``,
-      `- Launch reason: ${launchResult.reason ?? "started"}`,
-      launchResult.command ? `- Command: \`${launchResult.command}\`` : null,
-    ]
-      .filter(Boolean)
-      .join("\n");
+      const commentBody = [
+        COMMENT_MARKER,
+        "## Orchestrator Assignment",
+        "",
+        `- Provider: \`${assignment.provider}\``,
+        `- Role: \`${assignment.role}\``,
+        `- Branch: \`${assignment.branch}\``,
+        `- Worktree: \`${assignment.worktree}\``,
+        `- Tier: \`${assignment.execution.tier}\``,
+        `- Model: \`${assignment.execution.model}\``,
+        `- Effort: \`${assignment.execution.effort}\``,
+        `- Routing reason: ${assignment.execution.reason}`,
+        `- Handoff: \`${path.relative(currentRepoRoot, assignment.handoffPath)}\``,
+        `- Launch status: \`${launchResult.launched ? "launched" : "prepared"}\``,
+        `- Launch reason: ${launchResult.reason ?? "started"}`,
+        launchResult.command ? `- Command: \`${launchResult.command}\`` : null,
+      ]
+        .filter(Boolean)
+        .join("\n");
 
-    upsertIssueComment(repo, issue.number, commentBody, options.dryRun);
+      upsertIssueComment(repo, issue.number, commentBody, options.dryRun);
 
-    if (launchResult.launched) {
-      removeReadyLabel(repo, issue.number, options.dryRun);
-      state.launches[String(issue.number)] = {
+      if (launchResult.launched) {
+        removeReadyLabel(repo, issue.number, options.dryRun);
+        state.launches[String(issue.number)] = {
+          provider: assignment.provider,
+          branch: assignment.branch,
+          worktree: assignment.worktree,
+          handoffPath: assignment.handoffPath,
+          execution: assignment.execution,
+          launchedAt: new Date().toISOString(),
+          command: launchResult.command,
+          pid: launchResult.pid ?? null,
+          logPath: launchResult.logPath ?? null,
+        };
+      }
+
+      results.push({
+        issue: issue.number,
+        title: issue.title,
         provider: assignment.provider,
+        tier: assignment.execution.tier,
+        model: assignment.execution.model,
+        effort: assignment.execution.effort,
         branch: assignment.branch,
         worktree: assignment.worktree,
-        handoffPath: assignment.handoffPath,
-        launchedAt: new Date().toISOString(),
-        command: launchResult.command,
-        pid: launchResult.pid ?? null,
-        logPath: launchResult.logPath ?? null,
-      };
+        createdWorktree: worktreeResult.created,
+        launched: launchResult.launched,
+        reason: launchResult.reason,
+      });
     }
 
-    results.push({
-      issue: issue.number,
-      title: issue.title,
-      provider: assignment.provider,
-      branch: assignment.branch,
-      worktree: assignment.worktree,
-      createdWorktree: worktreeResult.created,
-      launched: launchResult.launched,
-      reason: launchResult.reason,
-    });
+    if (!options.dryRun) {
+      await writeFile(statePath, JSON.stringify(state, null, 2));
+    }
+
+    const runLog = {
+      ranAt: new Date().toISOString(),
+      repo,
+      project,
+      options,
+      results,
+    };
+    const runPath = path.join(
+      runsDir,
+      `${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
+    );
+
+    await writeFile(runPath, JSON.stringify(runLog, null, 2));
+
+    console.table(results);
+    console.log(`Run log: ${runPath}`);
+  } finally {
+    await unlink(lockPath).catch(() => {});
   }
-
-  if (!options.dryRun) {
-    await writeFile(statePath, JSON.stringify(state, null, 2));
-  }
-
-  const runLog = {
-    ranAt: new Date().toISOString(),
-    repo,
-    project,
-    options,
-    results,
-  };
-  const runPath = path.join(
-    runsDir,
-    `${new Date().toISOString().replace(/[:.]/g, "-")}.json`,
-  );
-
-  await writeFile(runPath, JSON.stringify(runLog, null, 2));
-
-  console.table(results);
-  console.log(`Run log: ${runPath}`);
 }
 
 main().catch((error) => {

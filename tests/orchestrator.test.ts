@@ -5,6 +5,7 @@ import {
   branchTypeFromLabels,
   buildLaunchCommand,
   parseProjectUrl,
+  resolveExecutionProfile,
   slugifyIssueTitle,
 } from "../scripts/lib/orchestrator.mjs";
 
@@ -53,18 +54,86 @@ describe("orchestrator helpers", () => {
         worktree: "/workspace/agents/claude-frontend-2",
         handoffPath: "/repo/docs/handoffs/claude-code-frontend.md",
         milestone: "Bootstrap Dry Run",
+        execution: {
+          tier: "economy",
+          model: "sonnet",
+          effort: "low",
+          reason: "narrow shell/seed/stub style task",
+          launchArgs: "--model 'sonnet' --effort 'low'",
+        },
       },
       templates: {
         codex: null,
-        claude: "claude --cwd {worktree} --prompt-file {handoff}",
+        claude:
+          "claude -p {launch_args} --permission-mode bypassPermissions \"$(cat '{handoff}')\"",
       },
       repo: "owner/repo",
       repoRoot: "/repo",
     });
 
     expect(command).toBe(
-      "claude --cwd /workspace/agents/claude-frontend-2 --prompt-file /repo/docs/handoffs/claude-code-frontend.md",
+      "claude -p --model 'sonnet' --effort 'low' --permission-mode bypassPermissions \"$(cat '/repo/docs/handoffs/claude-code-frontend.md')\"",
     );
+  });
+
+  it("selects economy codex profile for narrow content tasks", () => {
+    const assignment = assignmentFromIssue(
+      {
+        number: 1,
+        title:
+          "[Feature] Seed one objective-heavy assessment into normalized content",
+        url: "https://github.com/example/repo/issues/1",
+        milestone: { title: "Bootstrap Dry Run" },
+        labels: [{ name: "agent: content" }, { name: "type: feature" }],
+      },
+      "/repo",
+      "/workspace",
+    );
+
+    expect(
+      resolveExecutionProfile(
+        {
+          number: 1,
+          title:
+            "[Feature] Seed one objective-heavy assessment into normalized content",
+          labels: [{ name: "agent: content" }, { name: "type: feature" }],
+        },
+        assignment,
+      ),
+    ).toMatchObject({
+      tier: "economy",
+      model: "gpt-5.4-mini",
+      effort: "low",
+    });
+  });
+
+  it("selects deep codex profile for complex platform tasks", () => {
+    const assignment = assignmentFromIssue(
+      {
+        number: 3,
+        title: "[Feature] Build backend grading and review-queue shell",
+        url: "https://github.com/example/repo/issues/3",
+        milestone: { title: "Bootstrap Dry Run" },
+        labels: [{ name: "agent: platform" }, { name: "type: feature" }],
+      },
+      "/repo",
+      "/workspace",
+    );
+
+    expect(
+      resolveExecutionProfile(
+        {
+          number: 3,
+          title: "[Feature] Build backend grading and review-queue shell",
+          labels: [{ name: "agent: platform" }, { name: "type: feature" }],
+        },
+        assignment,
+      ),
+    ).toMatchObject({
+      tier: "deep",
+      model: "gpt-5.4",
+      effort: "high",
+    });
   });
 
   it("parses user project URLs", () => {

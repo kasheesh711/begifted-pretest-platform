@@ -17,6 +17,12 @@ Copy `orchestrator.config.example.json` to `orchestrator.config.json` and adjust
 
 The orchestrator already sets the child process working directory to the assigned worktree. Command templates should only add provider-specific flags and prompt wiring.
 
+The orchestrator also computes a cost-aware execution profile for every issue:
+
+- `economy`: cheapest viable model and lowest effort
+- `balanced`: default implementation path
+- `deep`: stronger model and higher effort for risky or cross-cutting tasks
+
 Supported placeholders:
 
 - `{issue}`
@@ -36,6 +42,8 @@ You can also set provider commands through environment variables:
 - `ORCH_CODEX_CMD`
 - `ORCH_CLAUDE_CMD`
 
+The recommended templates consume `{launch_args}` so model and effort selection can change per issue without editing the template itself.
+
 Claude Code note:
 
 - Claude Code does not support `--cwd`
@@ -43,7 +51,7 @@ Claude Code note:
 - example:
 
 ```bash
-claude -p --permission-mode bypassPermissions "$(cat '{handoff}')"
+claude -p {launch_args} --permission-mode bypassPermissions "$(cat '{handoff}')"
 ```
 
 Codex note:
@@ -52,8 +60,27 @@ Codex note:
 - example:
 
 ```bash
-codex exec -C {worktree} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
+codex exec -C {worktree} {launch_args} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
 ```
+
+## Routing policy
+
+The built-in policy optimizes for token usage first, then escalates only when the issue looks risky.
+
+- `economy` is selected for shell, seed, stub, landing, import, normalize, QA, and documentation-style tasks
+- `deep` is selected for auth, migrations, contracts, schemas, diagnostics, grading, reports, orchestration, persistence, integration work, or high-risk labels
+- everything else falls back to a role-based default tier
+
+Default provider profiles:
+
+- Codex `economy`: `gpt-5.4-mini` + `low`
+- Codex `balanced`: `gpt-5.4-mini` + `medium`
+- Codex `deep`: `gpt-5.4` + `high`
+- Claude Code `economy`: `sonnet` + `low`
+- Claude Code `balanced`: `sonnet` + `medium`
+- Claude Code `deep`: `opus` + `high`
+
+You can override these in `orchestrator.config.json` under `routing.profiles`.
 
 ## Usage
 

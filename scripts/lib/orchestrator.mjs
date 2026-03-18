@@ -50,6 +50,196 @@ const PROVIDER_ENV_KEYS = {
   claude: "ORCH_CLAUDE_CMD",
 };
 
+const DEFAULT_EXECUTION_PROFILES = {
+  codex: {
+    economy: {
+      model: "gpt-5.4-mini",
+      effort: "low",
+    },
+    balanced: {
+      model: "gpt-5.4-mini",
+      effort: "medium",
+    },
+    deep: {
+      model: "gpt-5.4",
+      effort: "high",
+    },
+  },
+  claude: {
+    economy: {
+      model: "sonnet",
+      effort: "low",
+    },
+    balanced: {
+      model: "sonnet",
+      effort: "medium",
+    },
+    deep: {
+      model: "opus",
+      effort: "high",
+    },
+  },
+};
+
+const DEFAULT_ROLE_TIERS = {
+  "PM/Spec Agent": "economy",
+  "Frontend Agent": "balanced",
+  "Content Pipeline Agent": "economy",
+  "Platform Agent": "balanced",
+  "Grading/Diagnostics Agent": "deep",
+  "QA/Ops Agent": "balanced",
+};
+
+const DEEP_LABELS = new Set([
+  "risk: high",
+  "priority: p0",
+  "priority: p1",
+  "shared-contract",
+  "shared-scope",
+  "coordination-required",
+  "security",
+]);
+
+const DEEP_TITLE_PATTERNS = [
+  /\bauth\b/i,
+  /\bmigration\b/i,
+  /\brefactor\b/i,
+  /\bcontract\b/i,
+  /\bschema\b/i,
+  /\bdiagnostic/i,
+  /\bgrading\b/i,
+  /\breport\b/i,
+  /\borchestrat/i,
+  /\breview-queue\b/i,
+  /\bpersistence\b/i,
+  /\bintegration\b/i,
+];
+
+const ECONOMY_TITLE_PATTERNS = [
+  /\bshell\b/i,
+  /\bstub\b/i,
+  /\bseed\b/i,
+  /\bscaffold\b/i,
+  /\blanding\b/i,
+  /\bcopy\b/i,
+  /\bcontent\b/i,
+  /\bqa\b/i,
+  /\bdoc/i,
+  /\bimport\b/i,
+  /\bnormalize\b/i,
+  /\bwire\b/i,
+];
+
+function shellQuote(value) {
+  return `'${String(value).replaceAll("'", "'\\''")}'`;
+}
+
+function mergeExecutionProfiles(config = {}) {
+  const configuredProfiles = config.routing?.profiles ?? {};
+  const mergedProfiles = {};
+
+  for (const provider of Object.keys(DEFAULT_EXECUTION_PROFILES)) {
+    mergedProfiles[provider] = {};
+
+    for (const tier of Object.keys(DEFAULT_EXECUTION_PROFILES[provider])) {
+      mergedProfiles[provider][tier] = {
+        ...DEFAULT_EXECUTION_PROFILES[provider][tier],
+        ...(configuredProfiles[provider]?.[tier] ?? {}),
+      };
+    }
+  }
+
+  return mergedProfiles;
+}
+
+function mergeRoleTiers(config = {}) {
+  return {
+    ...DEFAULT_ROLE_TIERS,
+    ...(config.routing?.roleTiers ?? {}),
+  };
+}
+
+function providerLaunchArgs(provider, profile) {
+  if (provider === "codex") {
+    return [
+      "-m",
+      shellQuote(profile.model),
+      "-c",
+      shellQuote(`model_reasoning_effort="${profile.effort}"`),
+    ].join(" ");
+  }
+
+  if (provider === "claude") {
+    return [
+      "--model",
+      shellQuote(profile.model),
+      "--effort",
+      shellQuote(profile.effort),
+    ].join(" ");
+  }
+
+  return "";
+}
+
+function selectExecutionTier(issue, assignment, roleTiers) {
+  const labelNames = assignment.labelNames;
+  const title = issue.title;
+
+  if (labelNames.some((label) => DEEP_LABELS.has(label.toLowerCase()))) {
+    return {
+      tier: "deep",
+      reason: "high-risk or shared-scope label",
+    };
+  }
+
+  if (DEEP_TITLE_PATTERNS.some((pattern) => pattern.test(title))) {
+    return {
+      tier: "deep",
+      reason: "complex title keywords",
+    };
+  }
+
+  if (ECONOMY_TITLE_PATTERNS.some((pattern) => pattern.test(title))) {
+    return {
+      tier: "economy",
+      reason: "narrow shell/seed/stub style task",
+    };
+  }
+
+  return {
+    tier: roleTiers[assignment.role] ?? "balanced",
+    reason: `default ${assignment.role} routing`,
+  };
+}
+
+export function resolveExecutionProfile(issue, assignment, config = {}) {
+  const profiles = mergeExecutionProfiles(config);
+  const roleTiers = mergeRoleTiers(config);
+  const selectedTier = selectExecutionTier(issue, assignment, roleTiers);
+  const providerProfiles = profiles[assignment.provider];
+
+  if (!providerProfiles) {
+    return {
+      tier: selectedTier.tier,
+      model: "",
+      effort: "",
+      reason: selectedTier.reason,
+      launchArgs: "",
+    };
+  }
+
+  const selectedProfile =
+    providerProfiles[selectedTier.tier] ?? providerProfiles.balanced;
+
+  return {
+    tier: selectedTier.tier,
+    model: selectedProfile.model,
+    effort: selectedProfile.effort,
+    reason: selectedTier.reason,
+    launchArgs: providerLaunchArgs(assignment.provider, selectedProfile),
+  };
+}
+
 export function slugifyIssueTitle(title) {
   return title
     .toLowerCase()
@@ -139,6 +329,10 @@ export function buildLaunchContext({ assignment, repo, repoRoot }) {
     repo,
     repo_root: repoRoot,
     milestone: assignment.milestone ?? "",
+    model: assignment.execution?.model ?? "",
+    effort: assignment.execution?.effort ?? "",
+    tier: assignment.execution?.tier ?? "",
+    launch_args: assignment.execution?.launchArgs ?? "",
   };
 }
 
@@ -191,5 +385,9 @@ export function mergeConfigWithDefaults(config = {}, env = process.env) {
     repo: config.repo ?? null,
     project: config.project ?? null,
     providers: loadCommandTemplates(config, env),
+    routing: {
+      profiles: mergeExecutionProfiles(config),
+      roleTiers: mergeRoleTiers(config),
+    },
   };
 }
