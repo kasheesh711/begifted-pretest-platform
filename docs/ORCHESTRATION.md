@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`scripts/orchestrate-agents.mjs` is the local supervisor for Codex, Claude Code, and Gemini via Antigravity.
+`scripts/orchestrate-agents.mjs` is the local supervisor for Codex and Claude Code.
 
 It does four things:
 
@@ -14,6 +14,14 @@ It does four things:
 ## Configuration
 
 Copy `orchestrator.config.example.json` to `orchestrator.config.json` and adjust the provider command templates for your machine.
+
+The orchestrator already sets the child process working directory to the assigned worktree. Command templates should only add provider-specific flags and prompt wiring.
+
+The orchestrator also computes a cost-aware execution profile for every issue:
+
+- `economy`: cheapest viable model and lowest effort
+- `balanced`: default implementation path
+- `deep`: stronger model and higher effort for risky or cross-cutting tasks
 
 Supported placeholders:
 
@@ -33,7 +41,46 @@ You can also set provider commands through environment variables:
 
 - `ORCH_CODEX_CMD`
 - `ORCH_CLAUDE_CMD`
-- `ORCH_GEMINI_CMD`
+
+The recommended templates consume `{launch_args}` so model and effort selection can change per issue without editing the template itself.
+
+Claude Code note:
+
+- Claude Code does not support `--cwd`
+- use the orchestrator's process `cwd` and pass the handoff file as the prompt payload if you want unattended runs
+- example:
+
+```bash
+claude -p {launch_args} --permission-mode bypassPermissions "$(cat '{handoff}')"
+```
+
+Codex note:
+
+- Codex should be launched with `exec -C`, not `--cwd`
+- example:
+
+```bash
+codex exec -C {worktree} {launch_args} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
+```
+
+## Routing policy
+
+The built-in policy optimizes for token usage first, then escalates only when the issue looks risky.
+
+- `economy` is selected for shell, seed, stub, landing, import, normalize, QA, and documentation-style tasks
+- `deep` is selected for auth, migrations, contracts, schemas, diagnostics, grading, reports, orchestration, persistence, integration work, or high-risk labels
+- everything else falls back to a role-based default tier
+
+Default provider profiles:
+
+- Codex `economy`: `gpt-5.4-mini` + `low`
+- Codex `balanced`: `gpt-5.4-mini` + `medium`
+- Codex `deep`: `gpt-5.4` + `high`
+- Claude Code `economy`: `sonnet` + `low`
+- Claude Code `balanced`: `sonnet` + `medium`
+- Claude Code `deep`: `opus` + `high`
+
+You can override these in `orchestrator.config.json` under `routing.profiles`.
 
 ## Usage
 
@@ -61,6 +108,8 @@ Relaunch an already assigned issue:
 npm run orchestrate:agents -- --issue 2 --relaunch
 ```
 
+When `--issue` and `--relaunch` are used together, the orchestrator can relaunch an open issue even after `status: ready` has been removed.
+
 ## Behavior
 
 - worktrees are created with the existing `scripts/new-agent-worktree.sh`
@@ -78,7 +127,7 @@ npm run orchestrate:agents -- --issue 2 --relaunch
 ## Provider routing
 
 - `agent: frontend` -> Claude Code
-- `agent: content` -> Gemini via Antigravity
+- `agent: content` -> Codex
 - `agent: platform` -> Codex
 - `agent: grading` -> Codex
 - `agent: qa-ops` -> Codex
@@ -89,4 +138,3 @@ npm run orchestrate:agents -- --issue 2 --relaunch
 - no issue is relaunched unless `--relaunch` is supplied
 - no provider command is executed if no command template is configured
 - the orchestrator never edits code; it only creates worktrees, launches agents, and syncs task metadata
-

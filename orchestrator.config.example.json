@@ -7,13 +7,24 @@
   "maxIssues": 3,
   "providers": {
     "codex": {
-      "commandTemplate": "codex --cwd {worktree}"
+      "commandTemplate": "codex exec -C {worktree} {launch_args} --dangerously-bypass-approvals-and-sandbox \"$(cat '{handoff}')\""
     },
     "claude": {
-      "commandTemplate": "claude --cwd {worktree}"
-    },
-    "gemini": {
-      "commandTemplate": "antigravity run gemini --cwd {worktree}"
+      "commandTemplate": "claude -p {launch_args} --permission-mode bypassPermissions \"$(cat '{handoff}')\""
+    }
+  },
+  "routing": {
+    "profiles": {
+      "codex": {
+        "economy": { "model": "gpt-5.4-mini", "effort": "low" },
+        "balanced": { "model": "gpt-5.4-mini", "effort": "medium" },
+        "deep": { "model": "gpt-5.4", "effort": "high" }
+      },
+      "claude": {
+        "economy": { "model": "sonnet", "effort": "low" },
+        "balanced": { "model": "sonnet", "effort": "medium" },
+        "deep": { "model": "opus", "effort": "high" }
+      }
     }
   }
 }
