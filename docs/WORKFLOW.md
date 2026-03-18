@@ -18,15 +18,16 @@ The same workflow applies whether the active implementation session is Codex, Cl
 
 - draft PR while implementation is still moving
 - ready for review only after lint, typecheck, and relevant tests pass locally
-- reviewer checks scope, contracts, docs, and risk notes
+- governance automation checks scope, contracts, docs, risk notes, and release eligibility
 - merge uses squash only
+- eligible PRs are bot-approved and auto-merged
 
 ## Release flow
 
 - merge to `main`
 - CI validates `main`
-- release notes and deployments happen from `main`
-- environment promotions are owned by QA/Ops Agent
+- release notes are generated automatically from `main` when merged changes are release-worthy
+- deployment decisions should consume the automated release signal rather than manual chat approval
 
 ## Blocking rules
 

@@ -22,6 +22,13 @@ declare -a LABELS=(
   "agent: content|15803d|Content Pipeline Agent"
   "agent: grading|b45309|Grading and diagnostics agent"
   "agent: qa-ops|7c3aed|QA and ops agent"
+  "policy: auto-approve|0369a1|Eligible for bot approval and automerge"
+  "policy: fast-lane|0891b2|Single-scope low-friction delivery lane"
+  "policy: coordinated|8b5cf6|Cross-scope or shared-contract automated lane"
+  "policy: shared-contracts|b45309|Touches shared contracts"
+  "policy: shared-scope|d97706|Touches multiple owned scopes"
+  "policy: release-candidate|15803d|Eligible for automated release after merge"
+  "policy: blocked|b42318|Blocked by governance policy requirements"
 )
 
 for item in "${LABELS[@]}"; do

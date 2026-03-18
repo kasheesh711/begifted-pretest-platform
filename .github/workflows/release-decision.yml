@@ -1,0 +1,40 @@
+name: Release Decision
+
+on:
+  workflow_run:
+    workflows:
+      - CI
+    types:
+      - completed
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    if: github.event.workflow_run.conclusion == 'success' && github.event.workflow_run.head_branch == 'main'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: main
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .nvmrc
+          cache: npm
+
+      - run: npm ci
+
+      - id: decide
+        run: node scripts/release-decision.mjs
+
+      - name: Create release
+        if: steps.decide.outputs.should_release == 'true'
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ steps.decide.outputs.tag_name }}
+          name: ${{ steps.decide.outputs.release_title }}
+          body_path: ${{ steps.decide.outputs.release_notes_path }}
+

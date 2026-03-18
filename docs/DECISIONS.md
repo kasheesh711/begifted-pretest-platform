@@ -35,3 +35,9 @@
 - Status: accepted
 - Decision: support Codex, Claude Code, and Gemini via Antigravity under one shared workflow
 - Rationale: increases parallel implementation capacity without changing repository governance or review rules
+
+## ADR-007: Policy-driven merge and release automation
+
+- Status: accepted
+- Decision: use machine-evaluated governance rules to auto-approve eligible PRs, detect shared-contract and shared-scope changes, and create releases from `main`
+- Rationale: removes manual orchestration bottlenecks while keeping risky changes explicit and auditable

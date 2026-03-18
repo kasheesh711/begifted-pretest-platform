@@ -95,6 +95,8 @@ Every PR must:
 
 Use `.github/PULL_REQUEST_TEMPLATE.md`.
 
+Governance automation evaluates every PR for lane selection, bot approval, shared-contract changes, shared-scope changes, and release eligibility.
+
 ## Handoff contract
 
 Every handoff comment or PR description must include:
@@ -122,6 +124,14 @@ Use [docs/HANDOFF_TEMPLATE.md](./docs/HANDOFF_TEMPLATE.md).
 - merging without passing required checks
 - changing infra, auth, or contracts without updating `docs/DECISIONS.md`
 - relying on local-only state that is not captured in issues, PRs, docs, or committed files
+
+## Automated governance
+
+- Fast-lane PRs can be bot-approved and set to auto-merge when checks pass.
+- Coordinated PRs can still be bot-approved if they satisfy machine policy requirements.
+- Shared contract or infra changes must update `docs/DECISIONS.md`.
+- Shared contract changes must also update one or more of `docs/API_CONTRACTS.md`, `docs/DATA_MODEL.md`, or `docs/CONTENT_MODEL.md`.
+- Releases are decided automatically from merged change sets on `main`.
 
 ## Definition of done
 

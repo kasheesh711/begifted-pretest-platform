@@ -16,6 +16,21 @@ export const questionTypeSchema = z.enum([
   "long_form",
 ]);
 
+export const rubricSchema = z.object({
+  criteria: z
+    .array(
+      z.object({
+        criterion: z.string(),
+        marks: z.number().optional(),
+      }),
+    )
+    .optional(),
+  modelAnswer: z.string().optional(),
+  escalationThreshold: z.number().int().optional(),
+  reference: z.string().optional(),
+  reviewerInstructions: z.string().optional(),
+});
+
 export const questionSchema = z.object({
   id: z.string(),
   prompt: z.string(),
@@ -24,6 +39,7 @@ export const questionSchema = z.object({
   topicTags: z.array(z.string()).min(1),
   gradingMode: gradingModeSchema,
   acceptedAnswers: z.array(z.string()).default([]),
+  rubric: rubricSchema.optional(),
 });
 
 export const assessmentSchema = z.object({

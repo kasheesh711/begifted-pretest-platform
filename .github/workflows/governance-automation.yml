@@ -1,0 +1,162 @@
+name: Governance Automation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - edited
+      - synchronize
+      - reopened
+      - ready_for_review
+      - labeled
+      - unlabeled
+
+permissions:
+  contents: write
+  issues: write
+  pull-requests: write
+
+jobs:
+  policy:
+    runs-on: ubuntu-latest
+    outputs:
+      auto_approve: ${{ steps.evaluate.outputs.auto_approve }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Capture PR metadata
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const files = await github.paginate(github.rest.pulls.listFiles, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            const payload = {
+              prNumber: context.payload.pull_request.number,
+              prBody: context.payload.pull_request.body || "",
+              changedFiles: files.map((file) => file.filename),
+            };
+            const fs = require("node:fs");
+            fs.mkdirSync("tmp", { recursive: true });
+            fs.writeFileSync("tmp/policy-input.json", JSON.stringify(payload, null, 2));
+
+      - id: evaluate
+        run: node scripts/policy-evaluate.mjs --input tmp/policy-input.json > tmp/policy-report.json
+
+      - name: Sync policy labels
+        uses: actions/github-script@v7
+        env:
+          REPORT_PATH: tmp/policy-report.json
+        with:
+          script: |
+            const fs = require("node:fs");
+            const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
+            const desired = new Set(report.labels);
+            const managed = [
+              "policy: auto-approve",
+              "policy: fast-lane",
+              "policy: coordinated",
+              "policy: shared-contracts",
+              "policy: shared-scope",
+              "policy: release-candidate",
+              "policy: blocked",
+            ];
+            const current = context.payload.pull_request.labels.map((label) => label.name);
+            const toRemove = current.filter((label) => managed.includes(label) && !desired.has(label));
+            const toAdd = [...desired].filter((label) => !current.includes(label));
+
+            if (toRemove.length > 0) {
+              for (const label of toRemove) {
+                await github.rest.issues.removeLabel({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  issue_number: context.payload.pull_request.number,
+                  name: label,
+                }).catch(() => {});
+              }
+            }
+
+            if (toAdd.length > 0) {
+              await github.rest.issues.addLabels({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                labels: toAdd,
+              });
+            }
+
+      - name: Publish governance comment
+        uses: actions/github-script@v7
+        env:
+          REPORT_PATH: tmp/policy-report.json
+        with:
+          script: |
+            const fs = require("node:fs");
+            const report = JSON.parse(fs.readFileSync(process.env.REPORT_PATH, "utf8"));
+            const marker = "<!-- governance-automation -->";
+            const body = `${marker}\n${report.summary}`;
+            const comments = await github.paginate(github.rest.issues.listComments, {
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.payload.pull_request.number,
+              per_page: 100,
+            });
+            const existing = comments.find((comment) => comment.body.includes(marker));
+            if (existing) {
+              await github.rest.issues.updateComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                comment_id: existing.id,
+                body,
+              });
+            } else {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.payload.pull_request.number,
+                body,
+              });
+            }
+
+      - name: Auto-approve PR
+        if: github.event.pull_request.draft == false && steps.evaluate.outputs.auto_approve == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            await github.rest.pulls.createReview({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              pull_number: context.payload.pull_request.number,
+              event: "APPROVE",
+              body: "Approved automatically by governance policy.",
+            }).catch((error) => {
+              core.warning(`Auto-approve skipped: ${error.message}`);
+            });
+
+      - name: Enable auto-merge
+        if: github.event.pull_request.draft == false && steps.evaluate.outputs.auto_approve == 'true'
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const query = `
+              mutation EnableAutoMerge($pullRequestId: ID!) {
+                enablePullRequestAutoMerge(input: { pullRequestId: $pullRequestId, mergeMethod: SQUASH }) {
+                  pullRequest {
+                    number
+                    autoMergeRequest {
+                      enabledAt
+                    }
+                  }
+                }
+              }
+            `;
+
+            await github.graphql(query, {
+              pullRequestId: context.payload.pull_request.node_id,
+            }).catch((error) => {
+              core.warning(`Auto-merge not enabled: ${error.message}`);
+            });
+
