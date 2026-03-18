@@ -10,7 +10,7 @@
       "commandTemplate": "codex --cwd {worktree}"
     },
     "claude": {
-      "commandTemplate": "claude --cwd {worktree}"
+      "commandTemplate": "claude -p --permission-mode bypassPermissions \"$(cat '{handoff}')\""
     },
     "gemini": {
       "commandTemplate": "antigravity run gemini --cwd {worktree}"

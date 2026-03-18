@@ -15,6 +15,8 @@ It does four things:
 
 Copy `orchestrator.config.example.json` to `orchestrator.config.json` and adjust the provider command templates for your machine.
 
+The orchestrator already sets the child process working directory to the assigned worktree. Command templates should only add provider-specific flags and prompt wiring.
+
 Supported placeholders:
 
 - `{issue}`
@@ -34,6 +36,16 @@ You can also set provider commands through environment variables:
 - `ORCH_CODEX_CMD`
 - `ORCH_CLAUDE_CMD`
 - `ORCH_GEMINI_CMD`
+
+Claude Code note:
+
+- Claude Code does not support `--cwd`
+- use the orchestrator's process `cwd` and pass the handoff file as the prompt payload if you want unattended runs
+- example:
+
+```bash
+claude -p --permission-mode bypassPermissions "$(cat '{handoff}')"
+```
 
 ## Usage
 
@@ -89,4 +101,3 @@ npm run orchestrate:agents -- --issue 2 --relaunch
 - no issue is relaunched unless `--relaunch` is supplied
 - no provider command is executed if no command template is configured
 - the orchestrator never edits code; it only creates worktrees, launches agents, and syncs task metadata
-
