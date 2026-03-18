@@ -41,3 +41,9 @@
 - Status: accepted
 - Decision: use machine-evaluated governance rules to auto-approve eligible PRs, detect shared-contract and shared-scope changes, and create releases from `main`
 - Rationale: removes manual orchestration bottlenecks while keeping risky changes explicit and auditable
+
+## ADR-008: Shared grading shell contracts
+
+- Status: accepted
+- Decision: keep the grading seed and review-resolution payload shapes in `packages/core`, while the API shell uses in-memory storage until persistence and job orchestration land
+- Rationale: allows route consumers to integrate against one shared contract source without prematurely introducing database or workflow infrastructure
