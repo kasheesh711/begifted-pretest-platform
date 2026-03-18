@@ -13,7 +13,7 @@
       "commandTemplate": "claude -p --permission-mode bypassPermissions \"$(cat '{handoff}')\""
     },
     "gemini": {
-      "commandTemplate": "antigravity --new-window \"{worktree}\" \"{handoff}\""
+      "commandTemplate": "gemini -p \"$(cat '{handoff}')\" --approval-mode yolo"
     }
   }
 }

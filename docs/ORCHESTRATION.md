@@ -56,15 +56,18 @@ Codex note:
 codex exec -C {worktree} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
 ```
 
-Gemini via Antigravity note:
+Gemini CLI note:
 
-- the local `antigravity` CLI is an editor launcher, not a prompt-driven Gemini runner
-- the reliable automation path is to open the assigned worktree and handoff in a new Antigravity window
+- Gemini CLI runs correctly from the orchestrator's assigned worktree, so no `cwd` flag is needed
+- use `-p` for non-interactive runs and `--approval-mode yolo` for unattended execution
 - example:
 
 ```bash
-antigravity --new-window "{worktree}" "{handoff}"
+gemini -p "$(cat '{handoff}')" --approval-mode yolo
 ```
+
+- Gemini CLI also requires auth before automated runs will succeed
+- supported auth comes from `GEMINI_API_KEY` or other Gemini-supported environment settings
 
 ## Usage
 
