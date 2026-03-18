@@ -25,7 +25,7 @@ After repository creation:
 1. enable branch protection on `main`
 2. require PR reviews and status checks
 3. create the GitHub Project fields listed below
-4. set repository variable `GITHUB_PROJECT_URL` if using automatic project assignment
+4. set repository variable `PROJECT_V2_URL` if using automatic project assignment
 
 ## Recommended GitHub Project fields
 
@@ -54,4 +54,3 @@ Do not commit secrets. Use provider-managed secrets for:
 - all merges land through PRs
 - `main` is the only release branch
 - staging and production environment setup should be recorded before the first live deploy
-

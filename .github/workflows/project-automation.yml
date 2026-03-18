@@ -15,11 +15,11 @@ on:
 jobs:
   add-to-project:
     runs-on: ubuntu-latest
-    if: vars.GITHUB_PROJECT_URL != ''
+    if: vars.PROJECT_V2_URL != ''
     steps:
       - uses: actions/add-to-project@v1.0.2
         with:
-          project-url: ${{ vars.GITHUB_PROJECT_URL }}
+          project-url: ${{ vars.PROJECT_V2_URL }}
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
   apply-path-labels:
@@ -43,4 +43,3 @@ jobs:
             if (!hasIssue) {
               core.warning("PR is missing a linked issue reference in the template.");
             }
-

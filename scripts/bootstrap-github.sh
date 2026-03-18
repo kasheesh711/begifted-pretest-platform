@@ -36,7 +36,6 @@ GitHub bootstrap complete.
 Manual follow-up:
 1. Enable branch protection on main.
 2. Create the GitHub Project fields listed in docs/OPS_RUNBOOK.md.
-3. Set repository variable GITHUB_PROJECT_URL to enable automatic project assignment.
+3. Set repository variable PROJECT_V2_URL to enable automatic project assignment.
 4. Replace placeholder values in .github/CODEOWNERS and .github/ISSUE_TEMPLATE/config.yml.
 EOF
-
