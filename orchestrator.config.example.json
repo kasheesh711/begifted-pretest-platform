@@ -11,9 +11,6 @@
     },
     "claude": {
       "commandTemplate": "claude -p --permission-mode bypassPermissions \"$(cat '{handoff}')\""
-    },
-    "gemini": {
-      "commandTemplate": "gemini -p \"$(cat '{handoff}')\" --approval-mode yolo"
     }
   }
 }

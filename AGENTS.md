@@ -1,6 +1,6 @@
 # Agent Operating Manual
 
-This repository is designed for concurrent work by Codex, Claude Code, and Gemini sessions, including Gemini routed through Antigravity. Repo state must stay understandable without relying on chat history.
+This repository is designed for concurrent work by Codex and Claude Code sessions. Repo state must stay understandable without relying on chat history.
 
 ## Repo map
 
@@ -21,7 +21,6 @@ This repository is designed for concurrent work by Codex, Claude Code, and Gemin
 - npm workspaces and Turbo
 - TypeScript, Vitest, Biome
 - Vercel, Supabase, GitHub Actions, and GitHub Projects once configured
-- Antigravity as the Gemini execution adapter when Gemini is used as an implementation agent
 - `scripts/orchestrate-agents.mjs` as the local supervisor for dispatching ready issues into provider-specific worktrees
 
 Do not introduce new infrastructure or orchestration tooling without recording the change in `docs/DECISIONS.md`.
@@ -35,7 +34,7 @@ Do not introduce new infrastructure or orchestration tooling without recording t
 - `Grading/Diagnostics Agent`: scoring engine, rubric support, recommendation rules, report generation
 - `QA/Ops Agent`: CI, tests, GitHub automation, deployment, observability, release readiness
 
-Codex, Claude Code, and Gemini may all fill these roles. The role and write scope matter more than the model provider.
+Codex and Claude Code may both fill these roles. The role and write scope matter more than the model provider.
 
 Detailed write scopes live in [docs/AGENT_ROLES.md](./docs/AGENT_ROLES.md).
 

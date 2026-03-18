@@ -2,7 +2,7 @@
 
 ## Purpose
 
-`scripts/orchestrate-agents.mjs` is the local supervisor for Codex, Claude Code, and Gemini via Antigravity.
+`scripts/orchestrate-agents.mjs` is the local supervisor for Codex and Claude Code.
 
 It does four things:
 
@@ -35,7 +35,6 @@ You can also set provider commands through environment variables:
 
 - `ORCH_CODEX_CMD`
 - `ORCH_CLAUDE_CMD`
-- `ORCH_GEMINI_CMD`
 
 Claude Code note:
 
@@ -55,19 +54,6 @@ Codex note:
 ```bash
 codex exec -C {worktree} --dangerously-bypass-approvals-and-sandbox "$(cat '{handoff}')"
 ```
-
-Gemini CLI note:
-
-- Gemini CLI runs correctly from the orchestrator's assigned worktree, so no `cwd` flag is needed
-- use `-p` for non-interactive runs and `--approval-mode yolo` for unattended execution
-- example:
-
-```bash
-gemini -p "$(cat '{handoff}')" --approval-mode yolo
-```
-
-- Gemini CLI also requires auth before automated runs will succeed
-- supported auth comes from `GEMINI_API_KEY` or other Gemini-supported environment settings
 
 ## Usage
 
@@ -114,7 +100,7 @@ When `--issue` and `--relaunch` are used together, the orchestrator can relaunch
 ## Provider routing
 
 - `agent: frontend` -> Claude Code
-- `agent: content` -> Gemini via Antigravity
+- `agent: content` -> Codex
 - `agent: platform` -> Codex
 - `agent: grading` -> Codex
 - `agent: qa-ops` -> Codex

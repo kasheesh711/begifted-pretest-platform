@@ -9,11 +9,11 @@ const ROLE_ASSIGNMENTS = {
     handoff: "docs/handoffs/claude-code-frontend.md",
   },
   "agent: content": {
-    provider: "gemini",
-    agentName: "gemini-content",
+    provider: "codex",
+    agentName: "codex-content",
     role: "Content Pipeline Agent",
     area: "content",
-    handoff: "docs/handoffs/gemini-antigravity-content.md",
+    handoff: "docs/handoffs/codex-content.md",
   },
   "agent: platform": {
     provider: "codex",
@@ -48,7 +48,6 @@ const ROLE_ASSIGNMENTS = {
 const PROVIDER_ENV_KEYS = {
   codex: "ORCH_CODEX_CMD",
   claude: "ORCH_CLAUDE_CMD",
-  gemini: "ORCH_GEMINI_CMD",
 };
 
 export function slugifyIssueTitle(title) {
@@ -117,10 +116,6 @@ export function loadCommandTemplates(config = {}, env = process.env) {
     claude:
       providers.claude?.commandTemplate ??
       env[PROVIDER_ENV_KEYS.claude] ??
-      null,
-    gemini:
-      providers.gemini?.commandTemplate ??
-      env[PROVIDER_ENV_KEYS.gemini] ??
       null,
   };
 }

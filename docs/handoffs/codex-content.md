@@ -1,13 +1,13 @@
-# Gemini via Antigravity Handoff
+# Codex Content Handoff
 
 ## Assignment
 
-- Agent: Gemini via Antigravity
+- Agent: Codex
 - Role: Content Pipeline Agent
 - Issue: `#1`
 - Issue URL: `https://github.com/kasheesh711/begifted-pretest-platform/issues/1`
 - Branch: `codex/feat/1-science-seed`
-- Worktree: `/Users/kevinhsieh/Desktop/workspace/agents/gemini-content-1`
+- Worktree: `/Users/kevinhsieh/Desktop/workspace/agents/codex-content-1`
 
 ## Objective
 
@@ -56,7 +56,7 @@ Start with the UK Year 7 science paper and its mark scheme because they are alre
 - `npm run lint` if tooling code changes
 - `npm run typecheck` if tooling code changes
 
-## Notes for Gemini
+## Notes for Codex
 
 - Prefer deterministic content modeling over over-generalizing the importer.
 - If the source contains ambiguity, capture it in the QA note rather than guessing.
@@ -70,4 +70,3 @@ On pause or completion, provide:
 - validation run
 - unresolved content ambiguities
 - exact next suggested import task
-

@@ -4,14 +4,14 @@ This directory contains the initial handoff packets for the first three parallel
 
 ## Active assignments
 
-- Gemini via Antigravity: [Issue #1 content seed](./gemini-antigravity-content.md)
+- Codex: [Issue #1 content seed](./codex-content.md)
 - Claude Code: [Issue #2 frontend invite shell](./claude-code-frontend.md)
 - Codex: [Issue #3 platform grading shell](./codex-platform.md)
 
 ## Worktree layout
 
 - Main repo: `/Users/kevinhsieh/Desktop/Pretest`
-- Gemini worktree: `/Users/kevinhsieh/Desktop/workspace/agents/gemini-content-1`
+- Codex content worktree: `/Users/kevinhsieh/Desktop/workspace/agents/codex-content-1`
 - Claude worktree: `/Users/kevinhsieh/Desktop/workspace/agents/claude-frontend-2`
 - Codex worktree: `/Users/kevinhsieh/Desktop/workspace/agents/codex-platform-3`
 
@@ -32,4 +32,3 @@ Every agent should read these before editing:
 - Record any contract drift before changing shared contracts.
 - Use the handoff template when pausing or finishing.
 - Do not reassign your own scope without a new issue.
-

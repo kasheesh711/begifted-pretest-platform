@@ -34,10 +34,10 @@ describe("orchestrator helpers", () => {
     );
 
     expect(assignment).toMatchObject({
-      provider: "gemini",
-      agentName: "gemini-content",
+      provider: "codex",
+      agentName: "codex-content",
       branch: "codex/feat/1-seed-one-objective-heavy-assessment-into-normali",
-      worktree: "/workspace/agents/gemini-content-1",
+      worktree: "/workspace/agents/codex-content-1",
     });
   });
 
@@ -57,7 +57,6 @@ describe("orchestrator helpers", () => {
       templates: {
         codex: null,
         claude: "claude --cwd {worktree} --prompt-file {handoff}",
-        gemini: null,
       },
       repo: "owner/repo",
       repoRoot: "/repo",
